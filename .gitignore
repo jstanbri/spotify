@@ -7,3 +7,4 @@ secrets.yml
 Unselected_Playlist.csv
 Upbeat_Dance_Playlist.csv
 .vscode/settings.json
+.env
