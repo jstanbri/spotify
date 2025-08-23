@@ -1,4 +1,3 @@
-# app.py
 from dotenv import load_dotenv
 import os
 import logging
@@ -7,6 +6,8 @@ import json
 from helpers.logs_mod import setup_logger
 from helpers.auth import SpotifyAuth
 from helpers.spotify_client import SpotifyClient
+from helpers.playlist_converter import PlaylistConverter
+from helpers.playlist_exporter import PlaylistExporter
 
 # Load environment variables from the .env file.
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -34,21 +35,36 @@ def main():
         logger.error("Authentication failed. Please check your credentials.")
         return
 
-    # Example: Replace with a real playlist ID
-    playlist_id = '5fvxnQRYyQ7wXgqEVcmQdk'  # ThisIsSodaBlonde
+    # Replace with a real playlist ID you want to convert
+    playlist_id = '5fvxnQRYyQ7wXgqEVcmQdk'  
     
     # Use the SpotifyClient to get the playlist tracks
-    playlist_tracks = spotify_client.get_playlist_tracks(playlist_id)
+    spotify_tracks = spotify_client.get_playlist_tracks(playlist_id)
     
-    if playlist_tracks:
-        logger.info("Playlist tracks fetched successfully.")
-        # Pretty print the JSON for a clear output
-        print(json.dumps(playlist_tracks, indent=2))
+    if spotify_tracks:
+        logger.info("Spotify playlist tracks fetched successfully.")
+        
+        # Initialize the PlaylistConverter and Exporter
+        converter = PlaylistConverter()
+        exporter = PlaylistExporter()
+        
+        # Convert the Spotify tracks to a simplified format
+        converted_tracks = converter.convert_spotify_tracks(spotify_tracks)
+        
+        if converted_tracks:
+            logger.info("Successfully converted tracks to a new format.")
+            
+            # Export the converted tracks to a JSON file
+            export_filename = "youtube_music_playlist.json"
+            if exporter.export_to_json(converted_tracks, export_filename):
+                logger.info(f"Playlist exported successfully! You can find the file at: {export_filename}")
+                print(f"\nYour YouTube Music playlist is ready to be imported. Look for the file '{export_filename}' in your project directory.")
+            else:
+                logger.error("Failed to export the playlist to a file.")
+        else:
+            logger.error("Failed to convert tracks.")
     else:
-        logger.error("Failed to retrieve playlist tracks.")
+        logger.error("Failed to retrieve Spotify playlist tracks.")
 
 if __name__ == "__main__":
     main()
-
-
-
